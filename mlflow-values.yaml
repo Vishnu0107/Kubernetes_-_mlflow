@@ -1,0 +1,51 @@
+global:
+  security:
+    allowInsecureImages: true
+
+image:
+  registry: docker.io
+  repository: ghcr.io/mlflow/mlflow
+  tag: latest
+
+tracking:
+  service:
+    type: ClusterIP
+    ports:
+      http: 5000
+
+  extraEnvVars:
+    - name: AWS_ACCESS_KEY_ID
+      valueFrom:
+        secretKeyRef:
+          name: mlflow-s3-creds-2022bcs0001
+          key: root-user
+
+    - name: AWS_SECRET_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          name: mlflow-s3-creds-2022bcs0001
+          key: root-password
+
+    - name: AWS_DEFAULT_REGION
+      value: "ap-south-2"
+
+postgresql:
+  enabled: true
+  auth:
+    username: mlflowuser
+    password: mlflowpass2022
+    database: mlflowdb
+
+  image:
+    registry: docker.io
+    repository: postgres
+    tag: "15"
+
+minio:
+  enabled: false
+
+externalS3:
+  host: s3.ap-south-2.amazonaws.com
+  bucket: mlflow-artifacts-2022bcs0001
+  protocol: https
+  serveArtifacts: true

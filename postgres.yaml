@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: mlflow-2022bcs0001
+spec:
+  ports:
+    - port: 5432
+  selector:
+    app: postgres
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  namespace: mlflow-2022bcs0001
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15
+          env:
+            - name: POSTGRES_DB
+              value: mlflowdb
+            - name: POSTGRES_USER
+              value: mlflowuser
+            - name: POSTGRES_PASSWORD
+              value: mlflowpass2022
+          ports:
+            - containerPort: 5432

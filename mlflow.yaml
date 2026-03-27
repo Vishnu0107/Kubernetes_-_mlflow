@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mlflow
+  namespace: mlflow-2022bcs0001
+spec:
+  ports:
+    - port: 5000
+      targetPort: 5000
+  selector:
+    app: mlflow
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mlflow
+  namespace: mlflow-2022bcs0001
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mlflow
+  template:
+    metadata:
+      labels:
+        app: mlflow
+    spec:
+      containers:
+        - name: mlflow
+          image: python:3.10
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              pip install mlflow psycopg2-binary boto3 && \
+              mlflow server \
+              --backend-store-uri postgresql://mlflowuser:mlflowpass2022@postgres:5432/mlflowdb \
+              --default-artifact-root s3://mlflow-artifacts-2022bcs0001/ \
+              --host 0.0.0.0 \
+              --port 5000
+          ports:
+            - containerPort: 5000
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: mlflow-s3-creds-2022bcs0001
+                  key: root-user
+
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: mlflow-s3-creds-2022bcs0001
+                  key: root-password
+
+            - name: AWS_DEFAULT_REGION
+              value: ap-south-2
